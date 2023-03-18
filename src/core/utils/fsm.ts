@@ -1,10 +1,11 @@
 import { Player, Wisp } from '../prefabs/player';
+import { Enemy } from '../prefabs/enemy';
 
 export interface StateStore {
 	[key: string]: State;
 }
 
-type Sprites = Player | Wisp;
+type Sprites = Player | Wisp | Enemy;
 
 export class State {
 	sprite: Sprites;

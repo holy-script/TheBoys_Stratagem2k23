@@ -1,5 +1,9 @@
 import Phaser from 'phaser';
 import { Player } from '../prefabs/player';
+import { useStore } from 'src/stores/app';
+import { Enemy } from '../prefabs/enemy';
+
+const store = useStore();
 
 export class PlayerInput {
 	scene: Phaser.Scene;
@@ -49,7 +53,7 @@ export class PlayerInput {
 			this.CASTING = true;
 		});
 
-		this.speed = 500;
+		this.speed = 1000;
 		this.HURT = false;
 		this.ROLLING = false;
 		this.CASTING = false;
@@ -72,7 +76,7 @@ export class PlayerInput {
 	}
 
 	movement() {
-		if (!this.DEAD) {
+		if (!this.DEAD && !store.paused) {
 			if (this.up.isDown) {
 				this.sprite.setVelocityY(-this.speed);
 			} else if (this.down.isDown) {
@@ -111,6 +115,63 @@ export class PlayerInput {
 			if (this.left.isUp && this.right.isUp) {
 				this.sprite.setVelocityX(0);
 			}
+		}
+	}
+}
+
+export class EnemyInput {
+	scene: Phaser.Scene;
+	sprite: Enemy;
+	HURT: boolean;
+	DEAD: boolean;
+	MOVING: boolean;
+	speed: number;
+	followDistance: number;
+
+	constructor(scene: Phaser.Scene, sprite: Enemy) {
+		this.scene = scene;
+		this.sprite = sprite;
+		this.HURT = false;
+		this.DEAD = false;
+		this.MOVING = false;
+		this.speed = 0;
+		this.followDistance = 100;
+	}
+
+	getActions() {
+		if (!this.DEAD) {
+			this.sprite.distX = Math.abs(store.playerX - this.sprite.x);
+			this.sprite.distY = Math.abs(store.playerY - this.sprite.y);
+			if (
+				this.sprite.distX < this.followDistance ||
+				this.sprite.distY < this.followDistance
+			)
+				this.sprite.follow = true;
+			else {
+				this.sprite.follow = false;
+				this.sprite.setVelocity(0);
+			}
+
+			if (this.sprite.follow) {
+				if (
+					this.sprite.distX > this.sprite.offsetX ||
+					this.sprite.distY > this.sprite.offsetY
+				) {
+					this.scene.physics.moveTo(
+						this.sprite,
+						store.playerX,
+						store.playerY,
+						this.speed
+					);
+					this.MOVING = true;
+				} else {
+					this.sprite.setVelocity(0);
+					this.MOVING = false;
+				}
+			}
+
+			if (this.sprite.body.velocity.x < 0) this.sprite.flipX = true;
+			else if (this.sprite.body.velocity.x > 0) this.sprite.flipX = false;
 		}
 	}
 }

@@ -3,10 +3,15 @@ import { eventsCenter } from '../utils/eventsCenter';
 import gsap from 'gsap';
 import heroSpriteSheet from 'assets/sprites/hero.png';
 import wispSpriteSheet from 'assets/sprites/wisp.png';
+import bossSpriteSheet from 'assets/sprites/boss.png';
 import fog from 'assets/sprites/fog.png';
 import forestTiles from 'assets/tilemaps/forestTilesetExtruded.png';
 import forestTilemap from 'assets/tilemaps/woodlands.json';
 import { Player } from '../prefabs/player';
+import { useStore } from 'stores/app';
+import { Enemy, bossAnims } from '../prefabs/enemy';
+
+const store = useStore();
 
 export class Play extends Phaser.Scene {
 	hero!: Player;
@@ -29,6 +34,10 @@ export class Play extends Phaser.Scene {
 		this.load.spritesheet('wisp', wispSpriteSheet, {
 			frameWidth: 32,
 			frameHeight: 32,
+		});
+		this.load.spritesheet('boss', bossSpriteSheet, {
+			frameWidth: 64,
+			frameHeight: 64,
 		});
 		this.load.image('fog', fog);
 		this.load.image('tileset', forestTiles);
@@ -72,6 +81,18 @@ export class Play extends Phaser.Scene {
 			'Spawns',
 			(obj) => obj.name === 'Player'
 		);
+		const shardSoulSpawn = map.filterObjects(
+			'Spawns',
+			(obj) => obj.name === 'ShardSoul'
+		);
+
+		for (const obj of shardSoulSpawn) {
+			if (obj?.x && obj?.y) {
+				const boss = new Enemy(this, obj.x, obj.y, 'boss').setDepth(3);
+				boss.getAnims(bossAnims);
+				boss.create();
+			}
+		}
 
 		this.hero = new Player(
 			this,
@@ -115,7 +136,7 @@ export class Play extends Phaser.Scene {
 		this.rt.fill(0x000000, 1);
 		this.rt.draw(ground);
 		this.rt.draw(trees);
-		this.rt.setTint(0x0a2948);
+		this.rt.setTint(0x031526);
 		this.rt.setDepth(4);
 		this.vision = this.add
 			.image(this.hero.x, this.hero.y, 'fog')
@@ -127,7 +148,9 @@ export class Play extends Phaser.Scene {
 	}
 
 	update() {
-		this.vision.x = this.hero.x;
-		this.vision.y = this.hero.y;
+		if (!store.paused) {
+			this.vision.x = this.hero.x;
+			this.vision.y = this.hero.y;
+		}
 	}
 }

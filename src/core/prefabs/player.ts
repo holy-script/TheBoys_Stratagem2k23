@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { StateMachine, State, StateStore } from '../utils/fsm';
 import { PlayerInput } from '../utils/inputs';
+import { useStore } from 'src/stores/app';
+
+const store = useStore();
 
 export class PlayerState extends State {
 	controls: PlayerInput;
@@ -10,7 +13,6 @@ export class PlayerState extends State {
 
 	constructor(sprite: Player, name: string, controls: PlayerInput) {
 		super(sprite, name);
-		/** @type {PlayerInput} */
 		this.controls = controls;
 		this.chain = false;
 		this.triggered = false;
@@ -18,7 +20,7 @@ export class PlayerState extends State {
 	}
 }
 
-interface AnimState<StateType> {
+export interface AnimState<StateType> {
 	name: string;
 	length: number;
 	repeat?: boolean;
@@ -33,6 +35,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 	animData: AnimState<typeof PlayerState>[];
 	fsm!: StateMachine;
 	wisp!: Wisp;
+	damage: number;
+	offsetX = 0;
+	offsetY = 0;
+	distX = 0;
+	distY = 0;
 
 	constructor(scene: Phaser.Scene, x: number, y: number, name: string) {
 		super(scene, x, y, name);
@@ -330,6 +337,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
 		this.setScale(2);
 		this.health = 100;
+		this.damage = 10;
 
 		this.create();
 	}
@@ -361,13 +369,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	preUpdate(time: number, delta: number) {
-		super.preUpdate(time, delta);
-		this.controls.getActions();
-		this.fsm.step();
+		if (!store.paused) {
+			super.preUpdate(time, delta);
+			this.controls.getActions();
+			this.fsm.step();
 
-		this.wisp.x = this.x + 30;
-		this.wisp.y = this.y - 30;
-		this.wisp.flipX = !this.flipX;
+			this.wisp.x = this.x + 30;
+			this.wisp.y = this.y - 30;
+			this.wisp.flipX = !this.flipX;
+		} else this.setVelocity(0);
 	}
 }
 
@@ -375,6 +385,11 @@ export class Wisp extends Phaser.Physics.Arcade.Sprite {
 	animData: AnimState<typeof State>[];
 	fsm!: StateMachine;
 	health: number;
+	damage = 0;
+	offsetX = 0;
+	offsetY = 0;
+	distX = 0;
+	distY = 0;
 
 	constructor(scene: Phaser.Scene, x: number, y: number) {
 		super(scene, x, y, 'wisp');
@@ -458,8 +473,10 @@ export class Wisp extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	preUpdate(time: number, delta: number) {
-		super.preUpdate(time, delta);
+		if (!store.paused) {
+			super.preUpdate(time, delta);
 
-		this.fsm.step();
+			this.fsm.step();
+		} else this.setVelocity(0);
 	}
 }
