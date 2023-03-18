@@ -1,12 +1,21 @@
 import Phaser from 'phaser';
 import { eventsCenter } from '../utils/eventsCenter';
 import gsap from 'gsap';
+import heroSpriteSheet from 'assets/sprites/hero.png';
+import { Player } from '../prefabs/player';
 
 export class Play extends Phaser.Scene {
 	constructor() {
 		super({
 			key: 'Play',
 			active: true,
+		});
+	}
+
+	preload() {
+		this.load.spritesheet('hero', heroSpriteSheet, {
+			frameWidth: 32,
+			frameHeight: 32,
 		});
 	}
 
@@ -31,5 +40,8 @@ export class Play extends Phaser.Scene {
 				}
 			);
 		});
+
+		new Player(this, 100, 100, 'hero');
+		this.physics.world.createDebugGraphic();
 	}
 }

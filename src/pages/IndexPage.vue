@@ -1,6 +1,6 @@
 <template>
-	<q-page class="row items-center justify-evenly bg-grey">
-		<div ref="root">
+	<q-page>
+		<div id="game-container" ref="root" class="bg-grey">
 			<q-spinner-hourglass v-if="!downloaded" color="warning" size="4em" />
 		</div>
 	</q-page>
@@ -39,3 +39,11 @@ export default defineComponent({
 	},
 });
 </script>
+
+<style lang="sass">
+#game-container
+  width: 100vw
+  height: 100vh
+  background: black
+  position: fixed
+</style>

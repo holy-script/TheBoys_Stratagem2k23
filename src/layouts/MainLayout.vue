@@ -17,3 +17,14 @@ export default defineComponent({
 	},
 });
 </script>
+
+<style lang="sass">
+*, *::before, *::after
+  box-sizing: border-box
+
+*
+  margin: 0
+
+html, body
+  height: 100%
+</style>
