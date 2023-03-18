@@ -3,6 +3,7 @@ import { StateMachine, State, StateStore } from '../utils/fsm';
 import { PlayerInput } from '../utils/inputs';
 import { useStore } from 'src/stores/app';
 import { eventsCenter } from '../utils/eventsCenter';
+import gsap from 'gsap';
 
 const store = useStore();
 
@@ -306,7 +307,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 						);
 						this.sprite.once('animationcomplete', () => {
 							this.sprite.anims.pause();
-							//   this.sprite.destroy()
+							store.gameOver = true;
 						});
 					}
 				},
@@ -362,11 +363,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 				},
 			},
 			{
-				name: 'disapper',
+				name: 'disappear',
 				length: 9,
 				state: class DisappearState extends PlayerState {
 					enter() {
-						this.sprite.play(this.name);
+						gsap.delayedCall(7, () => {
+							this.sprite.setVisible(true);
+							this.sprite.playReverse(this.name);
+						});
 						this.sprite.body.setSize(28, 24);
 						this.sprite.body.setOffset(
 							this.sprite.flipX ? 0 : 5,
@@ -407,7 +411,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 			if (obj?.state)
 				states[obj.name] = new obj.state(this, obj.name, this.controls);
 		}
-		this.fsm = new StateMachine('idle', states);
+		this.fsm = new StateMachine('disappear', states);
+
+		this.setVisible(false);
 
 		this.wisp = new Wisp(this.scene, this.x + 30, this.y - 30);
 		this.wisp.setDepth(5);

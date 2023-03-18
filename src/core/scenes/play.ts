@@ -56,24 +56,11 @@ export class Play extends Phaser.Scene {
 
 	create() {
 		this.scene.setVisible(false, 'Play');
-		const txt = this.add.text(100, 100, 'Hello World').setAlpha(0);
 		eventsCenter.on('start-play', () => {
 			this.scene
 				.setVisible(false, 'Logo')
 				.setVisible(true, 'Play')
 				.remove('Logo');
-			const duration = 0.1;
-			gsap.fromTo(
-				txt,
-				{
-					alpha: 0,
-				},
-				{
-					alpha: 1,
-					duration,
-					ease: 'linear',
-				}
-			);
 		});
 
 		const map = this.make.tilemap({ key: 'tilemap' });
@@ -171,7 +158,7 @@ export class Play extends Phaser.Scene {
 		// 	tileColor: null, // Color of non-colliding tiles
 		// 	collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
 		// });
-		this.physics.world.createDebugGraphic();
+		// this.physics.world.createDebugGraphic();
 
 		this.rt = this.make.renderTexture(
 			{
@@ -214,6 +201,11 @@ export class Play extends Phaser.Scene {
 		if (!store.paused) {
 			this.vision.x = this.hero.x;
 			this.vision.y = this.hero.y;
+		}
+
+		if (store.gameOver) {
+			this.hero.health = 0;
+			store.health = 0;
 		}
 	}
 }

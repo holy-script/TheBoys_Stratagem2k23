@@ -11,6 +11,8 @@ export const useStore = defineStore('main', {
 		playerY: 0,
 		stopDistance: 40,
 		specialCount: 3,
+		info: false,
+		gameWon: false,
 	}),
 
 	getters: {},
@@ -27,6 +29,9 @@ export const useStore = defineStore('main', {
 					duration: 0.5,
 				});
 			}
+		},
+		toggleInfo() {
+			this.info = !this.info;
 		},
 	},
 });

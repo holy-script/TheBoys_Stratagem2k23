@@ -212,6 +212,7 @@ export const bossAnims: AnimState<typeof EnemyState>[] = [
 				this.sprite.setVelocity(0);
 				this.sprite.play(this.name);
 				this.sprite.once('animationcomplete', () => {
+					store.gameWon = true;
 					if (store.specialCount < 3) store.specialCount += 1;
 					if (store.specialCount > 3) store.specialCount = 3;
 					if (store.health < 100) store.health += 5;
