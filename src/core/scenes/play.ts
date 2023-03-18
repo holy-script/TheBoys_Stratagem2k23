@@ -4,12 +4,14 @@ import gsap from 'gsap';
 import heroSpriteSheet from 'assets/sprites/hero.png';
 import wispSpriteSheet from 'assets/sprites/wisp.png';
 import bossSpriteSheet from 'assets/sprites/boss.png';
+import twigSpriteSheet from 'assets/sprites/twig.png';
+import leshySpriteSheet from 'assets/sprites/leshy.png';
 import fog from 'assets/sprites/fog.png';
 import forestTiles from 'assets/tilemaps/forestTilesetExtruded.png';
 import forestTilemap from 'assets/tilemaps/woodlands.json';
 import { Player } from '../prefabs/player';
 import { useStore } from 'stores/app';
-import { Enemy, bossAnims } from '../prefabs/enemy';
+import { Enemy, bossAnims, twigAnims, leshyAnims } from '../prefabs/enemy';
 
 const store = useStore();
 
@@ -38,6 +40,14 @@ export class Play extends Phaser.Scene {
 		this.load.spritesheet('boss', bossSpriteSheet, {
 			frameWidth: 64,
 			frameHeight: 64,
+		});
+		this.load.spritesheet('twig', twigSpriteSheet, {
+			frameWidth: 32,
+			frameHeight: 32,
+		});
+		this.load.spritesheet('leshy', leshySpriteSheet, {
+			frameWidth: 32,
+			frameHeight: 32,
 		});
 		this.load.image('fog', fog);
 		this.load.image('tileset', forestTiles);
@@ -81,19 +91,6 @@ export class Play extends Phaser.Scene {
 			'Spawns',
 			(obj) => obj.name === 'Player'
 		);
-		const shardSoulSpawn = map.filterObjects(
-			'Spawns',
-			(obj) => obj.name === 'ShardSoul'
-		);
-
-		for (const obj of shardSoulSpawn) {
-			if (obj?.x && obj?.y) {
-				const boss = new Enemy(this, obj.x, obj.y, 'boss').setDepth(3);
-				boss.getAnims(bossAnims);
-				boss.create();
-			}
-		}
-
 		this.hero = new Player(
 			this,
 			playerSpawn.x || 163,
@@ -111,6 +108,56 @@ export class Play extends Phaser.Scene {
 		this.physics.add.collider(this.hero, trees);
 		this.hero.setTint(0x5aaafa);
 
+		const bossSpawn = map.filterObjects(
+			'Spawns',
+			(obj) => obj.name === 'Boss'
+		);
+		const twigSpawn = map.filterObjects(
+			'Spawns',
+			(obj) => obj.name === 'Twig'
+		);
+		const leshySpawn = map.filterObjects(
+			'Spawns',
+			(obj) => obj.name === 'Leshy'
+		);
+
+		for (const obj of bossSpawn) {
+			if (obj?.x && obj?.y) {
+				const boss = new Enemy(this, obj.x, obj.y, 'boss')
+					.setDepth(3)
+					.setScale(4);
+				boss.body.setSize(35, 38);
+				boss.body.setOffset(14, 27);
+				boss.getAnims(bossAnims);
+				boss.damage = 15;
+				boss.create();
+			}
+		}
+		for (const obj of twigSpawn) {
+			if (obj?.x && obj?.y) {
+				const twig = new Enemy(this, obj.x, obj.y, 'twig')
+					.setDepth(3)
+					.setScale(3);
+				twig.body.setSize(20, 16);
+				twig.body.setOffset(6, 16);
+				twig.getAnims(twigAnims);
+				twig.damage = 8;
+				twig.create();
+			}
+		}
+		for (const obj of leshySpawn) {
+			if (obj?.x && obj?.y) {
+				const leshy = new Enemy(this, obj.x, obj.y, 'leshy')
+					.setDepth(3)
+					.setScale(3.5);
+				leshy.body.setSize(20, 16);
+				leshy.body.setOffset(6, 16);
+				leshy.getAnims(leshyAnims);
+				leshy.damage = 10;
+				leshy.create();
+			}
+		}
+
 		this.camera = this.cameras.main;
 		this.camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 		this.camera.startFollow(this.hero);
@@ -124,7 +171,7 @@ export class Play extends Phaser.Scene {
 		// 	tileColor: null, // Color of non-colliding tiles
 		// 	collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
 		// });
-		// this.physics.world.createDebugGraphic();
+		this.physics.world.createDebugGraphic();
 
 		this.rt = this.make.renderTexture(
 			{
@@ -141,7 +188,7 @@ export class Play extends Phaser.Scene {
 		this.vision = this.add
 			.image(this.hero.x, this.hero.y, 'fog')
 			.setDepth(3)
-			.setScale(3)
+			.setScale(10) // Should scale to 10 on spell cast
 			.setAlpha(0.2);
 		this.rt.mask = new Phaser.Display.Masks.BitmapMask(this, this.vision);
 		this.rt.mask.invertAlpha = true;

@@ -120,6 +120,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 				name: 'attack1',
 				length: 7,
 				state: class Attack1State extends PlayerState {
+					hitting!: boolean;
 					enter() {
 						this.sprite.play(this.name);
 						this.sprite.body.setSize(28, 24);
@@ -133,8 +134,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 							);
 						});
 						this.controls.LEFT_CLICK = false;
+						this.hitting = true;
 					}
 					execute() {
+						if (
+							this.sprite.anims.getProgress() > 0.5 &&
+							this.hitting
+						) {
+							store.damage = 10;
+							this.hitting = false;
+						}
+
 						if (this.controls.LEFT_CLICK) {
 							this.chain = true;
 							this.controls.LEFT_CLICK = false;
@@ -143,6 +153,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 						if (this.controls.HURT) this.machine.transition('hurt');
 					}
 					exit() {
+						store.damage = 0;
+						this.hitting = false;
 						this.chain = false;
 					}
 				},
@@ -168,6 +180,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 				name: 'attack2',
 				length: 6,
 				state: class Attack2State extends PlayerState {
+					hitting!: boolean;
 					enter() {
 						this.sprite.play(this.name);
 						this.sprite.body.setSize(28, 24);
@@ -181,8 +194,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 							);
 						});
 						this.controls.LEFT_CLICK = false;
+						this.hitting = true;
 					}
 					execute() {
+						if (
+							this.sprite.anims.getProgress() > 0.5 &&
+							this.hitting
+						) {
+							store.damage = 15;
+							this.hitting = false;
+						}
+
 						if (this.controls.LEFT_CLICK) {
 							this.chain = true;
 							this.controls.LEFT_CLICK = false;
@@ -191,6 +213,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 						if (this.controls.HURT) this.machine.transition('hurt');
 					}
 					exit() {
+						store.damage = 0;
+						this.hitting = false;
 						this.chain = false;
 					}
 				},
@@ -216,6 +240,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 				name: 'attack3',
 				length: 10,
 				state: class Attack3State extends PlayerState {
+					hitting!: boolean;
 					enter() {
 						this.sprite.play(this.name);
 						this.sprite.body.setSize(28, 24);
@@ -226,6 +251,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 						this.sprite.once('animationcomplete', () => {
 							this.machine.transition('idle');
 						});
+						this.controls.LEFT_CLICK = false;
+						this.hitting = true;
+					}
+					execute() {
+						if (
+							this.sprite.anims.getProgress() > 0.5 &&
+							this.hitting
+						) {
+							store.damage = 20;
+							this.hitting = false;
+						}
+					}
+					exit() {
+						store.damage = 0;
+						this.hitting = false;
+						this.controls.LEFT_CLICK = false;
 					}
 				},
 			},
@@ -335,7 +376,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 			},
 		];
 
-		this.setScale(2);
+		this.setScale(2.5);
 		this.health = 100;
 		this.damage = 10;
 
@@ -374,9 +415,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 			this.controls.getActions();
 			this.fsm.step();
 
+			store.playerX = this.x;
+			store.playerY = this.y;
 			this.wisp.x = this.x + 30;
 			this.wisp.y = this.y - 30;
 			this.wisp.flipX = !this.flipX;
+
+			if (this.health != store.health)
+				if (store.health <= 0) {
+					this.removeAllListeners();
+					this.controls.DEAD = true;
+					this.fsm.transition('death');
+					this.wisp.fsm.transition('death');
+				} else {
+					this.fsm.transition('hurt');
+					this.wisp.fsm.transition('flicker');
+				}
+			this.health = store.health;
 		} else this.setVelocity(0);
 	}
 }

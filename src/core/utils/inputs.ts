@@ -53,7 +53,7 @@ export class PlayerInput {
 			this.CASTING = true;
 		});
 
-		this.speed = 1000;
+		this.speed = 400;
 		this.HURT = false;
 		this.ROLLING = false;
 		this.CASTING = false;
@@ -134,7 +134,7 @@ export class EnemyInput {
 		this.HURT = false;
 		this.DEAD = false;
 		this.MOVING = false;
-		this.speed = 0;
+		this.speed = 100;
 		this.followDistance = 100;
 	}
 
@@ -150,6 +150,7 @@ export class EnemyInput {
 			else {
 				this.sprite.follow = false;
 				this.sprite.setVelocity(0);
+				this.MOVING = false;
 			}
 
 			if (this.sprite.follow) {
