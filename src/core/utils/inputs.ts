@@ -43,14 +43,14 @@ export class PlayerInput {
 
 		this.scene.input.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
 			if (ptr.button == 0) this.LEFT_CLICK = true;
-			if (ptr.button == 2) this.ROLLING = true;
+			if (ptr.button == 2 && store.specialCount > 0) this.ROLLING = true;
 		});
 		this.scene.input.on('pointerup', (ptr: Phaser.Input.Pointer) => {
 			if (ptr.button == 0) this.LEFT_CLICK = false;
 			if (ptr.button == 2) this.ROLLING = false;
 		});
 		this.space.on('down', () => {
-			this.CASTING = true;
+			if (store.specialCount > 0) this.CASTING = true;
 		});
 
 		this.speed = 400;
@@ -155,13 +155,15 @@ export class EnemyInput {
 
 			if (this.sprite.follow) {
 				if (
-					this.sprite.distX > this.sprite.offsetX ||
-					this.sprite.distY > this.sprite.offsetY
+					(this.sprite.distX > this.sprite.offsetX ||
+						this.sprite.distY > this.sprite.offsetY) &&
+					this.sprite.distX < 700 &&
+					this.sprite.distY < 700
 				) {
 					this.scene.physics.moveTo(
 						this.sprite,
 						store.playerX,
-						store.playerY,
+						store.playerY - this.sprite.height / 2,
 						this.speed
 					);
 					this.MOVING = true;

@@ -188,10 +188,26 @@ export class Play extends Phaser.Scene {
 		this.vision = this.add
 			.image(this.hero.x, this.hero.y, 'fog')
 			.setDepth(3)
-			.setScale(10) // Should scale to 10 on spell cast
+			.setScale(3) // Should scale to 10 on spell cast
 			.setAlpha(0.2);
 		this.rt.mask = new Phaser.Display.Masks.BitmapMask(this, this.vision);
 		this.rt.mask.invertAlpha = true;
+
+		eventsCenter.on('cast', () => {
+			gsap.to(this.vision, {
+				scale: 10,
+				duration: 0.5,
+				onComplete: () => {
+					gsap.delayedCall(3, () => {
+						eventsCenter.emit('cast-end');
+						gsap.to(this.vision, {
+							scale: 3,
+							duration: 0.5,
+						});
+					});
+				},
+			});
+		});
 	}
 
 	update() {

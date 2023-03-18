@@ -9,6 +9,8 @@ export const useStore = defineStore('main', {
 		gameOver: false,
 		playerX: 0,
 		playerY: 0,
+		stopDistance: 40,
+		specialCount: 3,
 	}),
 
 	getters: {},

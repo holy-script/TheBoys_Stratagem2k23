@@ -34,7 +34,19 @@
 					<q-img id="health" :src="healthBar" />
 				</div>
 			</div>
-			<!-- <div class="text-h6 q-ml-sm">{{ store.health }}</div> -->
+			<div class="text-h6 text-white q-ml-lg">{{ store.health }}</div>
+		</q-page-sticky>
+		<q-page-sticky position="bottom-left" :offset="[18, 18]">
+			<div class="text-center">
+				<q-icon
+					v-for="i in store.specialCount"
+					:key="i"
+					size="md"
+					color="teal"
+					name="star_rate"
+				/>
+			</div>
+			<div class="text-h6 text-white">Special Ability</div>
 		</q-page-sticky>
 	</q-page>
 </template>

@@ -40,8 +40,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 		this.follow = false;
 
 		this.health = 100;
-		this.offsetX = 42;
-		this.offsetY = 10;
+		this.offsetX = 50;
+		this.offsetY = 50;
 	}
 
 	getAnims(val: AnimState<typeof EnemyState>[]) {
@@ -99,9 +99,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 			super.preUpdate(time, delta);
 
 			this.controls.getActions();
-			if (this.name == 'boss') {
-				console.log(this.fsm.state);
-			}
 
 			if (!this.controls.DEAD) this.fsm.step();
 		} else this.setVelocity(0);
@@ -215,6 +212,10 @@ export const bossAnims: AnimState<typeof EnemyState>[] = [
 				this.sprite.setVelocity(0);
 				this.sprite.play(this.name);
 				this.sprite.once('animationcomplete', () => {
+					if (store.specialCount < 3) store.specialCount += 1;
+					if (store.specialCount > 3) store.specialCount = 3;
+					if (store.health < 100) store.health += 5;
+					if (store.health > 100) store.health = 100;
 					this.sprite.active = false;
 					this.sprite.visible = false;
 					this.sprite.destroy(true);
@@ -323,6 +324,10 @@ export const twigAnims: AnimState<typeof EnemyState>[] = [
 				this.sprite.setVelocity(0);
 				this.sprite.play(this.name);
 				this.sprite.once('animationcomplete', () => {
+					if (store.specialCount < 3) store.specialCount += 1;
+					if (store.specialCount > 3) store.specialCount = 3;
+					if (store.health < 100) store.health += 5;
+					if (store.health > 100) store.health = 100;
 					this.sprite.active = false;
 					this.sprite.visible = false;
 					this.sprite.destroy(true);
@@ -430,6 +435,10 @@ export const leshyAnims: AnimState<typeof EnemyState>[] = [
 				this.sprite.setVelocity(0);
 				this.sprite.play(this.name);
 				this.sprite.once('animationcomplete', () => {
+					if (store.specialCount < 3) store.specialCount += 1;
+					if (store.specialCount > 3) store.specialCount = 3;
+					if (store.health < 100) store.health += 5;
+					if (store.health > 100) store.health = 100;
 					this.sprite.active = false;
 					this.sprite.visible = false;
 					this.sprite.destroy(true);

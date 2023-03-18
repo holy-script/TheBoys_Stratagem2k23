@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { StateMachine, State, StateStore } from '../utils/fsm';
 import { PlayerInput } from '../utils/inputs';
 import { useStore } from 'src/stores/app';
+import { eventsCenter } from '../utils/eventsCenter';
 
 const store = useStore();
 
@@ -315,6 +316,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 				length: 6,
 				state: class CastState extends PlayerState {
 					enter() {
+						if (store.specialCount > 0) store.specialCount -= 1;
 						this.sprite.play(this.name);
 						this.sprite.body.setSize(28, 24);
 						this.sprite.body.setOffset(
@@ -325,6 +327,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 						this.sprite.once('animationcomplete', () => {
 							this.machine.transition('idle');
 						});
+						eventsCenter.emit('cast');
 					}
 					exit() {
 						this.controls.CASTING = false;
@@ -336,6 +339,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 				length: 5,
 				state: class RollState extends PlayerState {
 					enter() {
+						if (store.specialCount > 0) store.specialCount -= 1;
 						this.sprite.play(this.name);
 						this.sprite.body.setSize(28, 24);
 						this.sprite.body.setOffset(
@@ -415,7 +419,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 			this.controls.getActions();
 			this.fsm.step();
 
-			store.playerX = this.x;
+			store.playerX =
+				this.x +
+				(this.flipX ? -store.stopDistance : store.stopDistance);
 			store.playerY = this.y;
 			this.wisp.x = this.x + 30;
 			this.wisp.y = this.y - 30;
@@ -472,16 +478,20 @@ export class Wisp extends Phaser.Physics.Arcade.Sprite {
 				state: class IdleState extends State {
 					enter() {
 						this.sprite.play(this.name);
+						eventsCenter.on('cast', () => {
+							this.machine.transition('illuminate');
+						});
 					}
 				},
 			},
 			{
 				name: 'illuminate',
 				length: 8,
+				repeat: true,
 				state: class IlluminateState extends State {
 					enter() {
 						this.sprite.play(this.name);
-						this.sprite.once('animationcomplete', () => {
+						eventsCenter.on('cast-end', () => {
 							this.machine.transition('idle');
 						});
 					}
