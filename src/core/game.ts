@@ -6,8 +6,8 @@ function launch(root: HTMLDivElement) {
 	return new Phaser.Game({
 		type: Phaser.AUTO,
 		parent: root,
-		width: 1600,
-		height: 900,
+		width: 1200,
+		height: 720,
 		scene: [Logo, Play],
 		pixelArt: true,
 		autoFocus: true,

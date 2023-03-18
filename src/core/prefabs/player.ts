@@ -327,7 +327,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 			},
 		];
 
-		this.setScale(2.5);
+		this.setScale(2);
 		this.health = 100;
 
 		this.create();
