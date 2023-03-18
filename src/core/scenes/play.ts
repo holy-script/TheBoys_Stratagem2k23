@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { eventsCenter } from '../utils/eventsCenter';
 import gsap from 'gsap';
 import heroSpriteSheet from 'assets/sprites/hero.png';
+import wispSpriteSheet from 'assets/sprites/wisp.png';
+import fog from 'assets/sprites/fog.png';
 import forestTiles from 'assets/tilemaps/forestTilesetExtruded.png';
 import forestTilemap from 'assets/tilemaps/woodlands.json';
 import { Player } from '../prefabs/player';
@@ -10,6 +12,7 @@ export class Play extends Phaser.Scene {
 	hero!: Player;
 	camera!: Phaser.Cameras.Scene2D.Camera;
 	rt!: Phaser.GameObjects.RenderTexture;
+	vision!: Phaser.GameObjects.Image;
 
 	constructor() {
 		super({
@@ -23,6 +26,11 @@ export class Play extends Phaser.Scene {
 			frameWidth: 32,
 			frameHeight: 32,
 		});
+		this.load.spritesheet('wisp', wispSpriteSheet, {
+			frameWidth: 32,
+			frameHeight: 32,
+		});
+		this.load.image('fog', fog);
 		this.load.image('tileset', forestTiles);
 		this.load.tilemapTiledJSON('tilemap', forestTilemap);
 	}
@@ -35,7 +43,7 @@ export class Play extends Phaser.Scene {
 				.setVisible(false, 'Logo')
 				.setVisible(true, 'Play')
 				.remove('Logo');
-			const duration = 1;
+			const duration = 0.1;
 			gsap.fromTo(
 				txt,
 				{
@@ -80,6 +88,7 @@ export class Play extends Phaser.Scene {
 		this.hero.setCollideWorldBounds(true);
 		this.physics.add.collider(this.hero, ground);
 		this.physics.add.collider(this.hero, trees);
+		this.hero.setTint(0x5aaafa);
 
 		this.camera = this.cameras.main;
 		this.camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -108,5 +117,17 @@ export class Play extends Phaser.Scene {
 		this.rt.draw(trees);
 		this.rt.setTint(0x0a2948);
 		this.rt.setDepth(4);
+		this.vision = this.add
+			.image(this.hero.x, this.hero.y, 'fog')
+			.setDepth(3)
+			.setScale(3)
+			.setAlpha(0.2);
+		this.rt.mask = new Phaser.Display.Masks.BitmapMask(this, this.vision);
+		this.rt.mask.invertAlpha = true;
+	}
+
+	update() {
+		this.vision.x = this.hero.x;
+		this.vision.y = this.hero.y;
 	}
 }

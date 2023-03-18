@@ -18,20 +18,21 @@ export class PlayerState extends State {
 	}
 }
 
-interface AnimState {
+interface AnimState<StateType> {
 	name: string;
 	length: number;
 	repeat?: boolean;
 	rate?: number;
-	state: typeof PlayerState;
+	state: StateType;
 }
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
 	health: number;
 	scene: Phaser.Scene;
 	controls: PlayerInput;
-	animData: AnimState[];
+	animData: AnimState<typeof PlayerState>[];
 	fsm!: StateMachine;
+	wisp!: Wisp;
 
 	constructor(scene: Phaser.Scene, x: number, y: number, name: string) {
 		super(scene, x, y, name);
@@ -354,11 +355,111 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 				states[obj.name] = new obj.state(this, obj.name, this.controls);
 		}
 		this.fsm = new StateMachine('idle', states);
+
+		this.wisp = new Wisp(this.scene, this.x + 30, this.y - 30);
+		this.wisp.setDepth(5);
 	}
 
 	preUpdate(time: number, delta: number) {
 		super.preUpdate(time, delta);
 		this.controls.getActions();
+		this.fsm.step();
+
+		this.wisp.x = this.x + 30;
+		this.wisp.y = this.y - 30;
+		this.wisp.flipX = !this.flipX;
+	}
+}
+
+export class Wisp extends Phaser.Physics.Arcade.Sprite {
+	animData: AnimState<typeof State>[];
+	fsm!: StateMachine;
+	health: number;
+
+	constructor(scene: Phaser.Scene, x: number, y: number) {
+		super(scene, x, y, 'wisp');
+		scene.add.existing(this);
+		scene.physics.add.existing(this);
+		this.animData = [
+			{
+				name: 'death',
+				length: 10,
+				state: class DeathState extends State {
+					enter() {
+						this.sprite.play(this.name);
+						this.sprite.once('animationcomplete', () => {
+							this.sprite.setVelocity(0);
+							this.sprite.active = false;
+							this.sprite.visible = false;
+						});
+					}
+				},
+			},
+			{
+				name: 'idle',
+				length: 13,
+				repeat: true,
+				state: class IdleState extends State {
+					enter() {
+						this.sprite.play(this.name);
+					}
+				},
+			},
+			{
+				name: 'illuminate',
+				length: 8,
+				state: class IlluminateState extends State {
+					enter() {
+						this.sprite.play(this.name);
+						this.sprite.once('animationcomplete', () => {
+							this.machine.transition('idle');
+						});
+					}
+				},
+			},
+			{
+				name: 'flicker',
+				length: 5,
+				state: class FlickerState extends State {
+					enter() {
+						this.sprite.play(this.name);
+						this.sprite.once('animationcomplete', () => {
+							this.machine.transition('idle');
+						});
+					}
+				},
+			},
+		];
+
+		this.health = 100;
+		this.create();
+	}
+
+	create() {
+		let start = -1,
+			end = 0;
+		const states: StateStore = {};
+		for (const obj of this.animData) {
+			end = start + obj.length;
+			start++;
+			this.anims.create({
+				key: obj.name,
+				frames: this.anims.generateFrameNumbers('wisp', {
+					start,
+					end,
+				}),
+				frameRate: 10,
+				repeat: obj?.repeat ? -1 : 0,
+			});
+			start = end;
+			states[obj.name] = new obj.state(this, obj.name);
+		}
+		this.fsm = new StateMachine('idle', states);
+	}
+
+	preUpdate(time: number, delta: number) {
+		super.preUpdate(time, delta);
+
 		this.fsm.step();
 	}
 }

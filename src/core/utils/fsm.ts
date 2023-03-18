@@ -1,15 +1,17 @@
-import { Player } from '../prefabs/player';
+import { Player, Wisp } from '../prefabs/player';
 
 export interface StateStore {
 	[key: string]: State;
 }
 
+type Sprites = Player | Wisp;
+
 export class State {
-	sprite: Player;
+	sprite: Sprites;
 	name: string;
 	machine!: StateMachine;
 
-	constructor(sprite: Player, name: string) {
+	constructor(sprite: Sprites, name: string) {
 		this.sprite = sprite;
 		this.name = name;
 	}
